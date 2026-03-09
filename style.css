@@ -182,19 +182,19 @@ main{padding:28px;max-width:1200px;margin:0 auto;}
 /* RUN ROW */
 .run-row{border-bottom:1px solid var(--card-border);}
 .run-row:last-child{border-bottom:none;}
-.run-row-main{display:flex;align-items:center;gap:12px;padding:14px 16px;transition:background 0.15s;border-radius:8px;}
+.run-row-main{display:flex;align-items:center;gap:12px;padding:14px 16px 6px 16px;transition:background 0.15s;border-radius:8px 8px 0 0;}
 .run-row-main:hover{background:var(--row-hover);}
+.run-stats-row{display:flex;align-items:center;gap:20px;padding:6px 16px 12px 32px;}
 .run-type-badge{width:4px;height:38px;border-radius:4px;flex-shrink:0;}
 .run-info{flex:1;min-width:0;}
 .run-name{font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .run-date{font-size:0.76rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.run-stats-group{display:flex;gap:16px;flex-shrink:0;}
-.run-stat{text-align:right;}
+.run-stat{text-align:left;}
 .run-stat-val{font-family:'DM Mono',monospace;font-size:0.92rem;font-weight:500;}
 .run-stat-key{font-size:0.68rem;color:var(--muted);}
-.run-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.run-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto;}
 .strava-icon{font-size:0.7rem;color:var(--strava);background:rgba(252,76,2,0.10);padding:2px 7px;border-radius:100px;white-space:nowrap;}
-.expand-btn{background:none;border:1px solid var(--card-border);color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:6px;font-size:0.75rem;transition:all 0.15s;white-space:nowrap;}
+.expand-btn{background:none;border:1px solid var(--card-border);color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:6px;font-size:0.75rem;transition:all 0.15s;white-space:nowrap;margin-left:auto;}
 .expand-btn:hover{border-color:var(--accent);color:var(--accent);}
 .edit-btn{background:none;border:1px solid var(--card-border);color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:6px;font-size:0.95rem;transition:all 0.15s;white-space:nowrap;}
 .edit-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,58,237,0.08);}
@@ -436,15 +436,14 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
   .two-col{grid-template-columns:1fr;gap:12px;}
   .chart-card{padding:16px;}
 
-  /* Run list */
-  .run-list-card{border-radius:14px;}
-  .run-row-main{flex-wrap:wrap;gap:8px;padding:12px 14px;}
-  .run-info{flex:1;min-width:0;}
+  /* Run rows */
+  .run-row-main{padding:12px 14px 4px 14px;}
+  .run-stats-row{padding:4px 14px 12px 24px;gap:14px;flex-wrap:wrap;}
   .run-name{font-size:0.9rem;}
   .run-date{font-size:0.72rem;}
-  .run-stats-group{gap:12px;margin-left:16px;}
   .run-stat-val{font-size:0.85rem;}
-  .run-actions{margin-left:auto;gap:4px;}
+  .run-actions{gap:4px;}
+  .expand-btn{font-size:0.7rem;padding:3px 8px;}
   .filter-pills{gap:6px;padding:12px 14px;flex-wrap:wrap;}
   .pill{padding:5px 12px;font-size:0.75rem;}
 
