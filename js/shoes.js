@@ -4,7 +4,7 @@
 // ============================================================
 
 // ===================== SHOE HELPERS =====================
-const SHOE_MAX_KM = 800; // guide for bar fill
+const SHOE_MAX_KM = 700; // guide for bar fill
 
 function shoeKmFromRuns(shoeId){
   return runs.reduce((total,r)=>{
