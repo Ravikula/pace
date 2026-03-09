@@ -238,16 +238,16 @@ function runRowHTML(r,idx,showEdit=false){
         <div class="run-name">${r.type}${hasIntervals?` <span style="font-size:0.7rem;color:var(--accent);font-weight:400">${avgs.count} reps</span>`:''}${stravaTag}</div>
         <div class="run-date">${formatDate(r.date)}${shoeLine?` · ${shoeLine}`:''}</div>
       </div>
-      <div class="run-stats-group">
-        <div class="run-stat"><div class="run-stat-val">${effectiveDist(r).toFixed(1)}</div><div class="run-stat-key">km</div></div>
-        <div class="run-stat"><div class="run-stat-val">${paceDisplay}</div><div class="run-stat-key">min/km</div></div>
-        <div class="run-stat"><div class="run-stat-val">${hrDisplay}</div><div class="run-stat-key">bpm</div></div>
-      </div>
       <div class="run-actions">
-        ${expandBtn}
         ${editBtn}
         ${delBtn}
       </div>
+    </div>
+    <div class="run-stats-row">
+      <div class="run-stat"><div class="run-stat-val">${effectiveDist(r).toFixed(1)}</div><div class="run-stat-key">km</div></div>
+      <div class="run-stat"><div class="run-stat-val">${paceDisplay}</div><div class="run-stat-key">min/km</div></div>
+      <div class="run-stat"><div class="run-stat-val">${hrDisplay}</div><div class="run-stat-key">bpm</div></div>
+      ${expandBtn}
     </div>
     ${detailPanel}
   </div>`;
