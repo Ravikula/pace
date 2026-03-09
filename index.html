@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PACE — Run Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">PACE<span>.</span></div>
+  <nav id="top-nav">
+    <button class="active" onclick="switchView('dashboard',this)">Dashboard</button>
+    <button onclick="switchView('runs',this)">My Runs</button>
+    <button onclick="switchView('gear',this)">👟 Gear</button>
+    <button onclick="switchView('connections',this)">⚡ Connections</button>
+  </nav>
+  <div class="header-right">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+    <button class="add-btn" onclick="openModal()">+ Log Run</button>
+  </div>
+</header>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="bottom-nav">
+  <button class="bnav-btn active" onclick="switchView('dashboard',this)" data-view="dashboard">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Dashboard</span>
+  </button>
+  <button class="bnav-btn" onclick="switchView('runs',this)" data-view="runs">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    <span>Runs</span>
+  </button>
+  <button class="bnav-fab" onclick="openModal()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+  <button class="bnav-btn" onclick="switchView('gear',this)" data-view="gear">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+    <span>Gear</span>
+  </button>
+  <button class="bnav-btn" onclick="switchView('connections',this)" data-view="connections">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    <span>Connect</span>
+  </button>
+</nav>
+
+<main>
+
+<!-- DASHBOARD -->
+<div class="view active" id="view-dashboard">
+
+  <!-- ROW 1: Total Distance + Total Runs -->
+  <div class="stats-row">
+    <!-- Total Distance -->
+    <div class="stat-card yellow">
+      <div class="stat-label">Total Distance</div>
+      <div class="stat-value" id="stat-distance">0</div>
+      <div class="stat-unit" id="stat-distance-unit">kilometres</div>
+      <div class="stat-ctrl">
+        <span class="stat-ctrl-label">Range:</span>
+        <div class="ctrl-pills">
+          <button class="ctrl-pill active" data-dist-range="all" onclick="setDistRange('all',this)">All time</button>
+          <button class="ctrl-pill" data-dist-range="year" onclick="setDistRange('year',this)">This year</button>
+          <button class="ctrl-pill" data-dist-range="month" onclick="setDistRange('month',this)">This month</button>
+          <button class="ctrl-pill" data-dist-range="custom" onclick="setDistRange('custom',this)">Custom</button>
+        </div>
+      </div>
+      <div class="stat-ctrl" id="dist-custom-range" style="display:none">
+        <div class="ctrl-date-range">
+          <input type="date" id="dist-from" onchange="updateStats()">
+          <span>→</span>
+          <input type="date" id="dist-to" onchange="updateStats()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Runs -->
+    <div class="stat-card orange">
+      <div class="stat-label">Total Runs</div>
+      <div class="stat-value" id="stat-runs">0</div>
+      <div class="stat-unit" id="stat-runs-unit">sessions</div>
+      <div class="stat-ctrl">
+        <span class="stat-ctrl-label">Range:</span>
+        <div class="ctrl-pills">
+          <button class="ctrl-pill active" data-runs-range="all" onclick="setRunsRange('all',this)">All time</button>
+          <button class="ctrl-pill" data-runs-range="year" onclick="setRunsRange('year',this)">This year</button>
+          <button class="ctrl-pill" data-runs-range="month" onclick="setRunsRange('month',this)">This month</button>
+          <button class="ctrl-pill" data-runs-range="custom" onclick="setRunsRange('custom',this)">Custom</button>
+        </div>
+      </div>
+      <div class="stat-ctrl" id="runs-custom-range" style="display:none">
+        <div class="ctrl-date-range">
+          <input type="date" id="runs-from" onchange="updateStats()">
+          <span>→</span>
+          <input type="date" id="runs-to" onchange="updateStats()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Interval Avg Pace -->
+    <div class="stat-card blue">
+      <div class="stat-label">Interval Avg Pace</div>
+      <div class="stat-value" id="stat-interval-pace">—</div>
+      <div class="stat-unit">min/km · avg of reps</div>
+      <div class="stat-ctrl">
+        <span class="stat-ctrl-label">Based on last</span>
+        <select class="ctrl-select" id="interval-pace-n" onchange="updateStats()">
+          <option value="3">3 runs</option>
+          <option value="5" selected>5 runs</option>
+          <option value="10">10 runs</option>
+          <option value="all">All runs</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Interval Avg HR + Long Run Avg HR + Weekly Distance -->
+  <div class="stats-row-2">
+    <!-- Interval Avg HR -->
+    <div class="stat-card purple">
+      <div class="stat-label">Interval Avg HR</div>
+      <div class="stat-value" id="stat-interval-hr">—</div>
+      <div class="stat-unit">bpm · interval reps only</div>
+      <div class="stat-ctrl">
+        <span class="stat-ctrl-label">Based on last</span>
+        <select class="ctrl-select" id="interval-hr-n" onchange="updateStats()">
+          <option value="3">3 runs</option>
+          <option value="5" selected>5 runs</option>
+          <option value="10">10 runs</option>
+          <option value="all">All runs</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Long Run Avg HR -->
+    <div class="stat-card green">
+      <div class="stat-label">Long Run Avg HR</div>
+      <div class="stat-value" id="stat-longrun-hr">—</div>
+      <div class="stat-unit">bpm · long runs</div>
+      <div class="stat-ctrl">
+        <span class="stat-ctrl-label">Based on last</span>
+        <select class="ctrl-select" id="longrun-hr-n" onchange="updateStats()">
+          <option value="3">3 runs</option>
+          <option value="5" selected>5 runs</option>
+          <option value="10">10 runs</option>
+          <option value="all">All runs</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="chart-card"><div class="card-title">Weekly Distance</div><div class="card-sub">Last 8 weeks</div><div class="bar-chart" id="bar-chart"></div></div>
+    <div class="chart-card">
+      <div class="card-title">Run Types</div>
+      <div class="card-sub" id="run-type-pct-sub">Percentage of sessions</div>
+      <div class="type-breakdown" id="type-breakdown"></div>
+    </div>
+  </div>
+  <div class="run-list-card">
+    <div class="list-header"><div><div class="card-title">Recent Runs</div><div class="card-sub">Last 5 sessions</div></div></div>
+    <div id="recent-list"></div>
+  </div>
+</div>
+
+<!-- RUNS -->
+<div class="view" id="view-runs">
+  <div class="run-list-card">
+    <div class="list-header"><div><div class="card-title">All Runs</div><div class="card-sub" id="run-count-label">0 sessions</div></div></div>
+    <div class="filter-pills">
+      <button class="pill active" data-type="All" onclick="filterRuns('All',this)">All</button>
+      <button class="pill" data-type="Long Run" onclick="filterRuns('Long Run',this)">Long Run</button>
+      <button class="pill" data-type="Interval" onclick="filterRuns('Interval',this)">Interval</button>
+      <button class="pill" data-type="Recovery" onclick="filterRuns('Recovery',this)">Recovery</button>
+      <button class="pill" data-type="Tempo" onclick="filterRuns('Tempo',this)">Tempo</button>
+      <button class="pill" data-type="Easy" onclick="filterRuns('Easy',this)">Easy</button>
+      <button class="pill" data-type="Race" onclick="filterRuns('Race',this)">Race</button>
+    </div>
+    <div id="full-run-list"></div>
+  </div>
+</div>
+
+<!-- CONNECTIONS VIEW -->
+<div class="view" id="view-connections" style="display:none">
+<main style="padding:28px;max-width:960px;margin:0 auto;">
+
+  <!-- Page header -->
+  <div style="margin-bottom:28px">
+    <div style="font-family:'Bebas Neue',cursive;font-size:2rem;letter-spacing:3px;background:var(--title-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">Connections</div>
+    <div style="color:var(--muted);font-size:0.88rem;margin-top:6px">Link PACE to external services. Each connection syncs your data automatically.</div>
+  </div>
+
+  <!-- Connection cards grid -->
+  <div style="display:flex;flex-direction:column;gap:20px">
+
+    <!-- ── STRAVA ── -->
+    <div class="conn-card" id="conn-strava">
+      <div class="conn-card-header">
+        <div class="conn-icon" style="background:linear-gradient(135deg,#fc4c02,#e03e02)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+        </div>
+        <div class="conn-info">
+          <div class="conn-name">Strava</div>
+          <div class="conn-desc">Pull your runs automatically from Strava into PACE</div>
+        </div>
+        <div class="conn-status-badge" id="strava-conn-badge">
+          <span class="conn-dot" id="strava-conn-dot"></span>
+          <span id="strava-conn-label">Not connected</span>
+        </div>
+      </div>
+
+      <!-- Connected state -->
+      <div id="strava-connected-body" style="display:none">
+        <div class="conn-meta-row">
+          <span id="conn-athlete-name" style="color:var(--muted);font-size:0.85rem"></span>
+          <div style="display:flex;gap:8px">
+            <button class="sync-btn" id="sync-now-btn" onclick="syncStrava()">↻ Sync Now</button>
+            <button class="disconnect-btn" onclick="disconnectStrava()">Disconnect</button>
+          </div>
+        </div>
+        <div class="conn-settings">
+          <div class="sync-row">
+            <div><div class="sync-row-label">Auto-map run types</div><div class="sync-row-desc">Intelligently categorise Strava runs into PACE types</div></div>
+            <input type="checkbox" id="auto-map" checked style="width:auto;accent-color:var(--accent);transform:scale(1.4);cursor:pointer">
+          </div>
+          <div class="sync-row">
+            <div><div class="sync-row-label">Activities to pull</div><div class="sync-row-desc">Number of recent activities fetched per sync</div></div>
+            <select id="sync-count" style="width:auto;padding:6px 12px;font-size:0.85rem;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;font-family:'DM Sans',sans-serif;">
+              <option value="30">Last 30</option><option value="60" selected>Last 60</option><option value="100">Last 100</option><option value="200">Last 200</option>
+            </select>
+          </div>
+        </div>
+        <div id="sync-alert" class="alert" style="margin-top:12px"></div>
+        <div id="sync-log" class="sync-log" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Setup state -->
+      <div id="strava-setup-body">
+        <div class="conn-steps">
+          <div class="conn-step"><span class="conn-step-num">1</span><div><strong>Create a Strava App</strong> — Go to <a href="https://www.strava.com/settings/api" target="_blank">strava.com/settings/api</a>. Set the <em>Authorization Callback Domain</em> to <code>localhost</code>. Copy your <strong>Client ID</strong> and <strong>Client Secret</strong>.</div></div>
+          <div class="conn-step"><span class="conn-step-num">2</span><div><strong>Authorise access</strong> — Enter your Client ID below and click <em>Open Auth Page</em>. Approve on Strava, then copy the <code>code=XXXX</code> value from the redirect URL.</div></div>
+          <div class="conn-step"><span class="conn-step-num">3</span><div><strong>Connect</strong> — Paste the code and your Client Secret, then click <em>Connect & Sync</em>.</div></div>
+        </div>
+        <div class="conn-form">
+          <div id="connect-alert" class="alert"></div>
+          <div class="form-row">
+            <div class="fg"><label>Client ID</label><input type="text" id="client-id" placeholder="e.g. 123456"></div>
+            <div class="fg"><label>Client Secret</label><input type="password" id="client-secret" placeholder="Your client secret"></div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+            <button class="connect-btn auth-btn" onclick="openStravaAuth()" style="flex:1;min-width:160px">🔗 Open Auth Page</button>
+          </div>
+          <div style="margin-top:14px">
+            <div class="fg-full"><label>Auth Code (from redirect URL)</label><input type="text" id="auth-code" placeholder="Paste the code= value here..."></div>
+            <button class="connect-btn" id="connect-btn" onclick="exchangeToken()" style="width:100%;margin-top:10px">⚡ Connect & Sync Strava</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GOOGLE SHEETS ── -->
+    <div class="conn-card" id="conn-sheets">
+      <div class="conn-card-header">
+        <div class="conn-icon" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19.9 3H4.1C2.94 3 2 3.94 2 5.1v13.8C2 20.06 2.94 21 4.1 21h15.8c1.16 0 2.1-.94 2.1-2.1V5.1C22 3.94 21.06 3 19.9 3zm-9.9 13H6v-1.5h4V16zm0-3H6v-1.5h4V13zm0-3H6V8.5h4V10zm8 6h-6v-1.5h6V16zm0-3h-6v-1.5h6V13zm0-3h-6V8.5h6V10z"/></svg>
+        </div>
+        <div class="conn-info">
+          <div class="conn-name">Google Sheets</div>
+          <div class="conn-desc">Auto-log every run to a spreadsheet, organised by run type</div>
+        </div>
+        <div class="conn-status-badge" id="sheets-conn-badge">
+          <span class="conn-dot" id="sheets-conn-dot"></span>
+          <span id="sheets-conn-label">Not connected</span>
+        </div>
+      </div>
+
+      <!-- Connected state -->
+      <div id="sheets-connected-body" style="display:none">
+        <div class="conn-meta-row">
+          <span id="sheets-url-display" style="color:var(--muted);font-size:0.82rem;word-break:break-all;flex:1"></span>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="sync-btn" onclick="sheetsSyncAll()" id="sheets-sync-btn">↻ Sync All</button>
+            <button class="disconnect-btn" onclick="disconnectSheets()">Disconnect</button>
+          </div>
+        </div>
+        <div id="sheets-sync-alert" class="alert" style="margin-top:12px"></div>
+        <div id="sheets-sync-log" class="sync-log" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Setup state -->
+      <div id="sheets-setup-body">
+        <div class="conn-steps">
+          <div class="conn-step"><span class="conn-step-num">1</span><div><strong>Create a Google Sheet</strong> — Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> and create a blank spreadsheet. Copy the ID from the URL (the string between <code>/d/</code> and <code>/edit</code>).</div></div>
+          <div class="conn-step"><span class="conn-step-num">2</span><div><strong>Deploy the Apps Script</strong> — In your sheet open <em>Extensions → Apps Script</em>. Paste the downloaded script, replace <code>YOUR_SPREADSHEET_ID_HERE</code>, then <em>Deploy → New Deployment → Web App</em>. Set Execute as: <em>Me</em>, Access: <em>Anyone</em>. Copy the URL.</div></div>
+          <div class="conn-step"><span class="conn-step-num">3</span><div><strong>Paste the URL below</strong> and click Connect. PACE syncs all runs immediately and creates a tab per run type.</div></div>
+        </div>
+        <div class="conn-form">
+          <div id="sheets-connect-alert" class="alert"></div>
+          <div class="fg-full" style="margin-bottom:12px">
+            <label>Apps Script Web App URL</label>
+            <input type="url" id="sheets-url-input" placeholder="https://script.google.com/macros/s/XXXXXXX/exec">
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <button class="connect-btn" style="background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 4px 16px rgba(22,163,74,0.25);flex:1;min-width:160px" onclick="connectSheets()">📊 Connect & Sync</button>
+            <a id="download-gs-btn" style="display:inline-flex;align-items:center;gap:6px;background:var(--isb-bg);border:1px solid var(--isb-border);color:var(--accent);padding:10px 16px;border-radius:10px;font-size:0.82rem;font-weight:600;text-decoration:none;white-space:nowrap">⬇ Download Script</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FUTURE CONNECTIONS PLACEHOLDER ── -->
+    <div class="conn-card conn-card-future">
+      <div class="conn-card-header">
+        <div class="conn-icon" style="background:var(--isb-bg);border:1px dashed var(--border)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div class="conn-info">
+          <div class="conn-name" style="color:var(--muted)">More connections coming</div>
+          <div class="conn-desc">Garmin, Apple Health, Polar, Wahoo and more — stay tuned</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- GEAR VIEW -->
+<div class="view" id="view-gear" style="display:none">
+<main style="padding:28px;max-width:1200px;margin:0 auto;">
+
+  <div class="run-list-card">
+    <div class="list-header">
+      <div><div class="card-title">Running Shoes</div><div class="card-sub" id="shoe-count-label">0 shoes tracked</div></div>
+      <button class="add-btn" onclick="openShoeModal()">+ Add Shoe</button>
+    </div>
+
+    <!-- Shoe cards grid -->
+    <div id="shoe-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:4px"></div>
+
+    <div id="shoe-empty" class="empty-state" style="display:none">
+      <div class="empty-icon">👟</div>
+      <div class="empty-text">No shoes added yet</div>
+      <p>Click "+ Add Shoe" to start tracking your footwear</p>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- ADD / EDIT SHOE MODAL -->
+<div class="modal-overlay" id="shoe-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" id="shoe-modal-title">Add Shoe</div>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="form-group">
+        <label>Shoe Model / Name</label>
+        <input type="text" id="s-model" placeholder="e.g. Nike Vaporfly 3">
+      </div>
+      <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <label>Size (EU)</label>
+          <input type="text" id="s-size" placeholder="e.g. 43">
+        </div>
+        <div>
+          <label>Starting Mileage (km)</label>
+          <input type="number" id="s-mileage" placeholder="e.g. 150" min="0" step="0.1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="s-status">
+          <option value="active">Active</option>
+          <option value="retired">Retired</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea id="s-notes" placeholder="e.g. Race day shoe, bought Jan 2025" style="min-height:50px"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeShoeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveShoeFn()">Save Shoe</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title-text">Log a Run</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date</label><input type="date" id="f-date"></div>
+      <div class="form-group">
+        <label>Run Type</label>
+        <select id="f-type" onchange="onTypeChange()">
+          <option value="Long Run">Long Run</option>
+          <option value="Interval">Interval</option>
+          <option value="Recovery">Recovery</option>
+          <option value="Tempo">Tempo</option>
+          <option value="Easy">Easy</option>
+          <option value="Race">Race</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Total Distance (km)</label><input type="number" id="f-distance" placeholder="e.g. 10.5" step="0.1" min="0"></div>
+      <div class="form-group"><label>Total Duration (min)</label><input type="number" id="f-duration" placeholder="e.g. 55" min="0"></div>
+      <div class="form-group"><label>Avg Heart Rate</label><input type="number" id="f-hr" placeholder="e.g. 148" min="0"></div>
+      <div class="form-group"><label>Avg Cadence (spm)</label><input type="number" id="f-cadence" placeholder="e.g. 172" min="0"></div>
+      <div class="form-group full">
+        <label>Shoe Used</label>
+        <select id="f-shoe">
+          <option value="">— No shoe selected —</option>
+        </select>
+      </div>
+      <div class="form-group full"><label>Notes</label><textarea id="f-notes" placeholder="How did it feel?"></textarea></div>
+    </div>
+
+    <!-- INTERVAL BUILDER — shown only for Interval type -->
+    <div class="interval-section" id="interval-section">
+      <div class="interval-section-title">⚡ Interval Breakdown</div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px;line-height:1.6;">Add each segment below — warmup, each interval rep, and cooldown. Averages are calculated from interval reps only.</p>
+
+      <div class="add-segment-btns">
+        <button class="add-seg-btn warmup" onclick="addSegment('Warmup')">+ Warmup</button>
+        <button class="add-seg-btn interval" onclick="addSegment('Interval')">+ Interval Rep</button>
+        <button class="add-seg-btn cooldown" onclick="addSegment('Cooldown')">+ Cooldown</button>
+      </div>
+
+      <div class="segment-builder" id="segment-builder"></div>
+
+      <div class="interval-preview" id="interval-preview" style="display:none"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveRun()">Save Run</button>
+    </div>
+  </div>
+</div>
+
+<!-- DB status banner — shown briefly on load -->
+<div id="db-status" class="db-status-bar" style="display:none"></div>
+
+<!-- JS modules — load order matters: db first, then state, then features -->
+<script src="js/db.js"></script>
+<script src="js/state.js"></script>
+<script src="js/shoes.js"></script>
+<script src="js/runs.js"></script>
+<script src="js/strava.js"></script>
+<script src="js/sheets.js"></script>
+<script src="js/theme.js"></script>
+</body>
+</html>
