@@ -154,6 +154,26 @@ function updateStats(){
   } else {
     document.getElementById('stat-longrun-hr').textContent='—';
   }
+
+  // Long Run Avg Pace
+  const lrPaceN=document.getElementById('longrun-pace-n')?.value;
+  const longRunsWithPace=[...runs].filter(r=>r.type==='Long Run').sort((a,b)=>b.date.localeCompare(a.date));
+  const lrPacePool=lrPaceN==='all'?longRunsWithPace:longRunsWithPace.slice(0,parseInt(lrPaceN));
+  if(lrPacePool.length){
+    // Use stored pace if available, otherwise calculate from distance+duration
+    const paceSecs=lrPacePool.map(r=>{
+      if(r.pace) return paceToSec(r.pace);
+      return r.distance&&r.duration ? (parseFloat(r.duration)*60)/parseFloat(r.distance) : null;
+    }).filter(Boolean);
+    if(paceSecs.length){
+      const avgSec=paceSecs.reduce((a,s)=>a+s,0)/paceSecs.length;
+      document.getElementById('stat-longrun-pace').textContent=secToPace(avgSec);
+    } else {
+      document.getElementById('stat-longrun-pace').textContent='—';
+    }
+  } else {
+    document.getElementById('stat-longrun-pace').textContent='—';
+  }
 }
 
 function updateChart(){
@@ -220,7 +240,7 @@ function intervalDetailHTML(r){
 function runRowHTML(r,idx,showEdit=false){
   const hasIntervals=r.type==='Interval'&&r.segments&&r.segments.length>0;
   const avgs=hasIntervals?calcIntervalAverages(r.segments):null;
-  const paceDisplay=avgs?avgs.avgPace:formatPace(effectiveDist(r),r.duration);
+  const paceDisplay=avgs?avgs.avgPace:(r.pace||formatPace(effectiveDist(r),r.duration));
   const hrDisplay=avgs&&avgs.avgHR?avgs.avgHR:(r.hr||'—');
   const expandBtn=hasIntervals?`<button class="expand-btn" onclick="event.stopPropagation();toggleDetail(${idx},this)">▾ Intervals</button>`:'';
   const detailPanel=hasIntervals?`<div class="interval-detail" id="detail-${idx}">${intervalDetailHTML(r)}</div>`:'';
@@ -295,13 +315,34 @@ function updateStravaUI(){
 function updateAll(){updateStats();updateChart();updateBreakdown();updateRunList();updateStravaUI();updateGear();}
 
 // ===================== MODAL =====================
+function updateDurationPreview(){
+  const dist = parseFloat(document.getElementById('f-distance').value);
+  const pace = document.getElementById('f-pace').value.trim();
+  const el   = document.getElementById('duration-preview');
+  const paceSec = paceToSec(pace);
+  if(dist > 0 && paceSec > 0){
+    const totalMin = (paceSec * dist) / 60;
+    const h = Math.floor(totalMin / 60);
+    const m = Math.floor(totalMin % 60);
+    const s = Math.round((totalMin % 1) * 60);
+    el.textContent = h > 0
+      ? `${h}h ${m}m ${s}s`
+      : `${m}m ${s}s`;
+    el.style.color = 'var(--accent)';
+  } else {
+    el.textContent = '—';
+    el.style.color = 'var(--muted)';
+  }
+}
+
 function openModal(){
   editingIdx=null;
   document.getElementById('modal-title-text').textContent='Log a Run';
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
-  ['f-distance','f-duration','f-hr','f-cadence','f-notes'].forEach(id=>document.getElementById(id).value='');
+  ['f-distance','f-hr','f-cadence','f-notes','f-pace'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-type').value='Easy';
   document.getElementById('f-shoe').value='';
+  document.getElementById('duration-preview').textContent='—';
   segments=[];
   renderSegments();
   populateShoeSelect();
@@ -317,7 +358,7 @@ function openEditModal(idx){
   document.getElementById('f-date').value=r.date||'';
   document.getElementById('f-type').value=r.type||'Easy';
   document.getElementById('f-distance').value=r.distance||'';
-  document.getElementById('f-duration').value=r.duration||'';
+  document.getElementById('f-pace').value=r.pace||formatPace(parseFloat(r.distance)||0, parseFloat(r.duration)||0)||'';
   document.getElementById('f-hr').value=r.hr||'';
   document.getElementById('f-cadence').value=r.cadence||'';
   document.getElementById('f-notes').value=r.notes||'';
@@ -328,6 +369,7 @@ function openEditModal(idx){
   if(r.type==='Interval'&&segments.length){sec.classList.add('show');}
   else{sec.classList.remove('show');}
   document.getElementById('modal').classList.add('open');
+  updatePacePreview();
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('open');editingIdx=null;}
@@ -421,11 +463,17 @@ function updateIntervalPreview(){
 // ===================== SAVE RUN =====================
 function saveRun(){
   const type=document.getElementById('f-type').value;
+  const dist=document.getElementById('f-distance').value;
+  const pace=document.getElementById('f-pace').value.trim();
+  // Auto-calculate duration from distance + pace
+  const paceSec=paceToSec(pace);
+  const duration=dist&&paceSec>0 ? ((paceSec*parseFloat(dist))/60).toFixed(1) : '';
   const run={
     date:document.getElementById('f-date').value,
     type,
-    distance:document.getElementById('f-distance').value,
-    duration:document.getElementById('f-duration').value,
+    distance:dist,
+    pace:pace,
+    duration:duration,
     hr:document.getElementById('f-hr').value,
     cadence:document.getElementById('f-cadence').value,
     shoeId:document.getElementById('f-shoe').value||null,
