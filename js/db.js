@@ -6,9 +6,9 @@
 // ============================================================
 
 const FIREBASE_CONFIG = {
-  apiKey:            'YOUR_API_KEY',
-  authDomain:        'YOUR_PROJECT_ID.firebaseapp.com',
-  projectId:         'YOUR_PROJECT_ID',
+  apiKey:     'AIzaSyDn71sBBRWl6uENdhSvs_7hujjvN8Mpyl4',
+  authDomain: 'pace-25c02.firebaseapp.com',
+  projectId:  'pace-25c02',
 };
 
 // ── Is the DB configured? ────────────────────────────────────
