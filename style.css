@@ -422,8 +422,8 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
   .bnav-fab:active{transform:translateY(-8px) scale(0.93);}
 
   /* Stats grid */
-  .stats-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-  .stats-row-2{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stats-row{grid-template-columns:1fr;gap:10px;margin-bottom:12px;}
+  .stats-row-2{grid-template-columns:1fr;gap:10px;margin-bottom:16px;}
   .stat-card{padding:14px 14px;}
   .stat-value{font-size:2rem !important;}
   .ctrl-pills{gap:4px;}
