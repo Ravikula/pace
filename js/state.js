@@ -5,8 +5,8 @@
 // ============================================================
 
 const TYPE_COLORS = {
-  'Long Run':'#a78bfa','Interval':'#8b5cf6','Recovery':'#c4b5fd',
-  'Tempo':'#7c3aed','Easy':'#a78bfa','Race':'#6d28d9'
+  'Interval':'#8b5cf6','Easy':'#a78bfa',
+  'Long Run':'#6d28d9','Tempo':'#7c3aed'
 };
 
 function stravaToType(act){

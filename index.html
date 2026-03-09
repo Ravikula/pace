@@ -188,12 +188,10 @@
     <div class="list-header"><div><div class="card-title">All Runs</div><div class="card-sub" id="run-count-label">0 sessions</div></div></div>
     <div class="filter-pills">
       <button class="pill active" data-type="All" onclick="filterRuns('All',this)">All</button>
+      <button class="pill" data-type="Interval" onclick="filterRuns('Interval',this)">Interval Run</button>
+      <button class="pill" data-type="Easy" onclick="filterRuns('Easy',this)">Easy Run</button>
       <button class="pill" data-type="Long Run" onclick="filterRuns('Long Run',this)">Long Run</button>
-      <button class="pill" data-type="Interval" onclick="filterRuns('Interval',this)">Interval</button>
-      <button class="pill" data-type="Recovery" onclick="filterRuns('Recovery',this)">Recovery</button>
-      <button class="pill" data-type="Tempo" onclick="filterRuns('Tempo',this)">Tempo</button>
-      <button class="pill" data-type="Easy" onclick="filterRuns('Easy',this)">Easy</button>
-      <button class="pill" data-type="Race" onclick="filterRuns('Race',this)">Race</button>
+      <button class="pill" data-type="Tempo" onclick="filterRuns('Tempo',this)">Tempo Run</button>
     </div>
     <div id="full-run-list"></div>
   </div>
@@ -412,12 +410,10 @@
       <div class="form-group">
         <label>Run Type</label>
         <select id="f-type" onchange="onTypeChange()">
+          <option value="Interval">Interval Run</option>
+          <option value="Easy" selected>Easy Run</option>
           <option value="Long Run">Long Run</option>
-          <option value="Interval">Interval</option>
-          <option value="Recovery">Recovery</option>
-          <option value="Tempo">Tempo</option>
-          <option value="Easy">Easy</option>
-          <option value="Race">Race</option>
+          <option value="Tempo">Tempo Run</option>
         </select>
       </div>
       <div class="form-group"><label>Total Distance (km)</label><input type="number" id="f-distance" placeholder="e.g. 10.5" step="0.1" min="0" oninput="updateDurationPreview()"></div>

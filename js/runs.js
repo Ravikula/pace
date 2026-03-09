@@ -185,7 +185,7 @@ function updateChart(){
 }
 
 function updateBreakdown(){
-  const types=['Long Run','Interval','Recovery','Tempo','Easy','Race'],counts={};
+  const types=['Interval','Easy','Long Run','Tempo'],counts={};
   types.forEach(t=>counts[t]=0);runs.forEach(r=>{if(counts[r.type]!==undefined)counts[r.type]++;});
   const total=runs.length||1;
   const max=Math.max(...Object.values(counts),1);
