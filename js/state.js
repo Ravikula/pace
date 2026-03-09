@@ -20,8 +20,8 @@ function stravaToType(act){
 }
 
 // ── App state ──────────────────────────────────────────────
-let runs         = JSON.parse(localStorage.getItem('pace_runs')  || '[]');
-let shoes        = JSON.parse(localStorage.getItem('pace_shoes') || '[]');
+let runs         = [];
+let shoes        = [];
 let stravaConfig = JSON.parse(localStorage.getItem('pace_strava')|| 'null');
 let activeFilter = 'All';
 let segments     = [];
@@ -115,36 +115,35 @@ function formatDate(s){
   return new Date(s+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
 }
 
-// ── Boot: load from GitHub, fall back to localStorage ─────
+// ── Boot: load from Firebase, fall back to localStorage ─────
 async function initData(){
   showDbStatus('loading');
-  seedIfEmpty(); // show something immediately from cache
 
   if(!dbConfigured()){
+    seedIfEmpty();
     showDbStatus('unconfigured');
     updateAll(); updateSheetsUI(); updateGear();
     return;
   }
 
   try{
-    const { runs: ghRuns, shoes: ghShoes } = await DB.load();
+    const { runs: dbRuns, shoes: dbShoes } = await DB.load();
 
-    if(ghRuns.length === 0 && runs.length > 0){
-      // GitHub is empty but we have local data — push it up
+    if(dbRuns.length === 0 && runs.length > 0){
+      // Firebase is empty but we have local data — push it up
       ensureIds();
       await DB.save(runs, shoes, 'PACE: initial data migration');
       showDbStatus('connected');
-    } else if(ghRuns.length > 0){
-      // GitHub has data — use it as source of truth
-      runs  = ghRuns;
-      shoes = ghShoes;
-      save(); saveShoes();
-      showDbStatus('connected');
     } else {
+      // Always use Firebase as source of truth
+      runs  = dbRuns;
+      shoes = dbShoes;
+      save(); saveShoes();
       showDbStatus('connected');
     }
   } catch(err){
-    console.warn('GitHub unavailable, using local cache:', err.message);
+    console.warn('Firebase unavailable, using local cache:', err.message);
+    seedIfEmpty();
     showDbStatus('offline');
   }
 
