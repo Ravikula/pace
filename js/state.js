@@ -58,26 +58,7 @@ async function dbSave(message){
   }
 }
 
-// ── Seed data (shown on very first load only) ──────────────
-function seedIfEmpty(){
-  if(runs.length > 0) return;
-  const ago=n=>{ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; };
-  runs = [
-    {id:'seed-easy-1',  date:ago(1), type:'Easy',    distance:'8.2', duration:'47', hr:'132',cadence:'168',notes:'Morning shakeout'},
-    {id:'seed-int-4',   date:ago(4), type:'Interval', distance:'10.5',duration:'60', hr:'165',cadence:'182',notes:'8x400m session',segments:[
-      {segType:'Warmup',distance:'1.0',pace:'7:00',hr:'135'},{segType:'Interval',distance:'0.4',pace:'4:33',hr:'175'},
-      {segType:'Interval',distance:'0.4',pace:'4:23',hr:'179'},{segType:'Interval',distance:'0.4',pace:'4:13',hr:'184'},
-      {segType:'Interval',distance:'0.4',pace:'4:11',hr:'188'},{segType:'Cooldown',distance:'1.0',pace:'8:00',hr:'135'},
-    ]},
-    {id:'seed-long-6',  date:ago(6), type:'Long Run', distance:'21.1',duration:'125',hr:'148',cadence:'170',notes:'Half marathon distance'},
-    {id:'seed-rec-9',   date:ago(9), type:'Recovery', distance:'5.5', duration:'38', hr:'124',cadence:'162',notes:'Super easy'},
-    {id:'seed-tmp-11',  date:ago(11),type:'Tempo',    distance:'12.0',duration:'58', hr:'162',cadence:'178',notes:'Comfortably hard'},
-    {id:'seed-long-14', date:ago(14),type:'Long Run', distance:'18.0',duration:'108',hr:'145',cadence:'169',notes:'Good aerobic effort'},
-    {id:'seed-race-21', date:ago(21),type:'Race',     distance:'5.0', duration:'21', hr:'178',cadence:'186',notes:'5K PB attempt!'},
-    {id:'seed-tmp-25',  date:ago(25),type:'Tempo',    distance:'11.0',duration:'55', hr:'158',cadence:'176',notes:'Crisp morning run'},
-  ];
-  save();
-}
+
 
 // ── DB status banner ───────────────────────────────────────
 function showDbStatus(state){
@@ -127,7 +108,6 @@ async function initData(){
   }
 
   if(!dbConfigured()){
-    seedIfEmpty();
     showDbStatus('unconfigured');
     updateAll(); updateSheetsUI(); updateGear();
     return;
