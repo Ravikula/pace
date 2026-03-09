@@ -369,7 +369,7 @@ function openEditModal(idx){
   if(r.type==='Interval'&&segments.length){sec.classList.add('show');}
   else{sec.classList.remove('show');}
   document.getElementById('modal').classList.add('open');
-  updatePacePreview();
+  updateDurationPreview();
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('open');editingIdx=null;}

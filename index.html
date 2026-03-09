@@ -52,6 +52,7 @@
 <div class="view active" id="view-dashboard">
 
   <!-- ROW 1: Total Distance + Total Runs -->
+  <!-- ROW 1: Total Distance · Total Runs · Interval Avg Pace -->
   <div class="stats-row">
     <!-- Total Distance -->
     <div class="stat-card yellow">
@@ -116,7 +117,7 @@
     </div>
   </div>
 
-  <!-- ROW 2: Interval Avg HR + Long Run Avg HR + Long Run Avg Pace -->
+  <!-- ROW 2: Interval Avg HR · Long Run Avg Pace · Long Run Avg HR -->
   <div class="stats-row-2">
     <!-- Interval Avg HR -->
     <div class="stat-card purple">
@@ -134,14 +135,14 @@
       </div>
     </div>
 
-    <!-- Long Run Avg HR -->
+    <!-- Long Run Avg Pace -->
     <div class="stat-card green">
-      <div class="stat-label">Long Run Avg HR</div>
-      <div class="stat-value" id="stat-longrun-hr">—</div>
-      <div class="stat-unit">bpm · long runs</div>
+      <div class="stat-label">Long Run Avg Pace</div>
+      <div class="stat-value" id="stat-longrun-pace">—</div>
+      <div class="stat-unit">min/km · long runs</div>
       <div class="stat-ctrl">
         <span class="stat-ctrl-label">Based on last</span>
-        <select class="ctrl-select" id="longrun-hr-n" onchange="updateStats()">
+        <select class="ctrl-select" id="longrun-pace-n" onchange="updateStats()">
           <option value="3">3 runs</option>
           <option value="5" selected>5 runs</option>
           <option value="10">10 runs</option>
@@ -150,14 +151,14 @@
       </div>
     </div>
 
-    <!-- Long Run Avg Pace -->
-    <div class="stat-card blue">
-      <div class="stat-label">Long Run Avg Pace</div>
-      <div class="stat-value" id="stat-longrun-pace">—</div>
-      <div class="stat-unit">min/km · long runs</div>
+    <!-- Long Run Avg HR -->
+    <div class="stat-card yellow">
+      <div class="stat-label">Long Run Avg HR</div>
+      <div class="stat-value" id="stat-longrun-hr">—</div>
+      <div class="stat-unit">bpm · long runs</div>
       <div class="stat-ctrl">
         <span class="stat-ctrl-label">Based on last</span>
-        <select class="ctrl-select" id="longrun-pace-n" onchange="updateStats()">
+        <select class="ctrl-select" id="longrun-hr-n" onchange="updateStats()">
           <option value="3">3 runs</option>
           <option value="5" selected>5 runs</option>
           <option value="10">10 runs</option>
