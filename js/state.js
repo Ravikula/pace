@@ -83,10 +83,10 @@ function seedIfEmpty(){
 function showDbStatus(state){
   const el=document.getElementById('db-status'); if(!el) return;
   const map={
-    loading:      { text:'Syncing with GitHub…',              cls:'info'    },
-    connected:    { text:'✓ Synced with GitHub',              cls:'success' },
+    loading:      { text:'Syncing with Firebase…',              cls:'info'    },
+    connected:    { text:'✓ Synced with Firebase',              cls:'success' },
     offline:      { text:'⚠ Offline — using local cache',    cls:'warning' },
-    error:        { text:'⚠ GitHub save failed — check token', cls:'warning'},
+    error:        { text:'⚠ Firebase save failed — check credentials', cls:'warning'},
     unconfigured: { text:'ⓘ No database configured — data is local only', cls:'info' },
   };
   const s=map[state]||map.unconfigured;
