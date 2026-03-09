@@ -182,14 +182,17 @@ main{padding:28px;max-width:1200px;margin:0 auto;}
 /* RUN ROW */
 .run-row{border-bottom:1px solid var(--card-border);}
 .run-row:last-child{border-bottom:none;}
-.run-row-main{display:grid;grid-template-columns:auto 1fr auto auto auto auto auto auto auto;align-items:center;gap:12px;padding:14px 10px;transition:background 0.15s;border-radius:8px;}
+.run-row-main{display:flex;align-items:center;gap:12px;padding:14px 16px;transition:background 0.15s;border-radius:8px;}
 .run-row-main:hover{background:var(--row-hover);}
-.run-type-badge{width:10px;height:34px;border-radius:4px;flex-shrink:0;}
-.run-date{font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--muted);}
-.run-name{font-weight:500;font-size:0.95rem;}
+.run-type-badge{width:4px;height:38px;border-radius:4px;flex-shrink:0;}
+.run-info{flex:1;min-width:0;}
+.run-name{font-weight:600;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.run-date{font-size:0.76rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.run-stats-group{display:flex;gap:16px;flex-shrink:0;}
 .run-stat{text-align:right;}
-.run-stat-val{font-family:'DM Mono',monospace;font-size:0.95rem;font-weight:500;}
-.run-stat-key{font-size:0.7rem;color:var(--muted);}
+.run-stat-val{font-family:'DM Mono',monospace;font-size:0.92rem;font-weight:500;}
+.run-stat-key{font-size:0.68rem;color:var(--muted);}
+.run-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
 .strava-icon{font-size:0.7rem;color:var(--strava);background:rgba(252,76,2,0.10);padding:2px 7px;border-radius:100px;white-space:nowrap;}
 .expand-btn{background:none;border:1px solid var(--card-border);color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:6px;font-size:0.75rem;transition:all 0.15s;white-space:nowrap;}
 .expand-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -424,10 +427,10 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
   /* Stats grid — single column on mobile */
   .stats-row{grid-template-columns:1fr !important;gap:10px;margin-bottom:12px;}
   .stats-row-2{grid-template-columns:1fr !important;gap:10px;margin-bottom:16px;}
-  .stat-card{padding:14px 14px;}
-  .stat-value{font-size:2rem !important;}
-  .ctrl-pills{gap:4px;}
-  .ctrl-pill{padding:4px 8px;font-size:0.7rem;}
+  .stat-card{padding:16px;}
+  .stat-value{font-size:2.4rem !important;}
+  .ctrl-pills{gap:4px;flex-wrap:wrap;}
+  .ctrl-pill{padding:4px 10px;font-size:0.72rem;}
 
   /* Charts */
   .two-col{grid-template-columns:1fr;gap:12px;}
@@ -435,13 +438,14 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
 
   /* Run list */
   .run-list-card{border-radius:14px;}
-  .run-row{padding:12px 14px;gap:10px;}
-  .run-date{font-size:0.75rem;}
-  .run-dist{font-size:1.1rem;}
-  .run-pace{font-size:0.75rem;}
-  .run-actions{gap:4px;}
-  .run-edit-btn,.run-del-btn{width:28px;height:28px;font-size:0.8rem;}
-  .filter-pills{gap:6px;padding:12px 14px;}
+  .run-row-main{flex-wrap:wrap;gap:8px;padding:12px 14px;}
+  .run-info{flex:1;min-width:0;}
+  .run-name{font-size:0.9rem;}
+  .run-date{font-size:0.72rem;}
+  .run-stats-group{gap:12px;margin-left:16px;}
+  .run-stat-val{font-size:0.85rem;}
+  .run-actions{margin-left:auto;gap:4px;}
+  .filter-pills{gap:6px;padding:12px 14px;flex-wrap:wrap;}
   .pill{padding:5px 12px;font-size:0.75rem;}
 
   /* Modal — full screen on mobile */

@@ -220,30 +220,34 @@ function intervalDetailHTML(r){
 function runRowHTML(r,idx,showEdit=false){
   const hasIntervals=r.type==='Interval'&&r.segments&&r.segments.length>0;
   const avgs=hasIntervals?calcIntervalAverages(r.segments):null;
-
   const paceDisplay=avgs?avgs.avgPace:formatPace(effectiveDist(r),r.duration);
   const hrDisplay=avgs&&avgs.avgHR?avgs.avgHR:(r.hr||'—');
-
-  const expandBtn=hasIntervals?`<button class="expand-btn" onclick="event.stopPropagation();toggleDetail(${idx},this)">▾ Intervals</button>`:'<span></span>';
+  const expandBtn=hasIntervals?`<button class="expand-btn" onclick="event.stopPropagation();toggleDetail(${idx},this)">▾ Intervals</button>`:'';
   const detailPanel=hasIntervals?`<div class="interval-detail" id="detail-${idx}">${intervalDetailHTML(r)}</div>`:'';
-
-  const editBtn=showEdit?`<button class="edit-btn" onclick="event.stopPropagation();openEditModal(${idx})" title="Edit run">✎</button>`:'';
-  const delBtn=showEdit?`<button class="delete-btn" onclick="event.stopPropagation();deleteRun(${idx})" title="Delete run">✕</button>`:'<button class="delete-btn" style="display:none">✕</button>';
-
+  const editBtn=showEdit?`<button class="edit-btn" onclick="event.stopPropagation();openEditModal(${idx})" title="Edit">✎</button>`:'';
+  const delBtn=showEdit?`<button class="delete-btn" onclick="event.stopPropagation();deleteRun(${idx})" title="Delete">✕</button>`:'';
   const clickable=showEdit?`style="cursor:pointer" onclick="openEditModal(${idx})"` :'';
+  const shoe=r.shoeId?shoes.find(s=>s.id===r.shoeId):null;
+  const shoeLine=shoe?`<span style="color:var(--accent);font-size:0.72rem">👟 ${shoe.model}</span>`:'';
+  const stravaTag=r.fromStrava?`<span class="strava-icon" style="font-size:0.68rem;margin-left:4px">Strava</span>`:'';
 
   return`<div class="run-row" id="run-row-${idx}">
     <div class="run-row-main" ${clickable}>
       <div class="run-type-badge" style="background:${TYPE_COLORS[r.type]||'#555'}"></div>
-      <div><div class="run-name">${r.type}${hasIntervals?` <span style="font-size:0.7rem;color:var(--accent);font-weight:400">${calcIntervalAverages(r.segments).count} reps</span>`:''}</div><div class="run-date">${formatDate(r.date)}${r.shoeId?` · <span style="color:var(--accent);font-size:0.72rem">👟 ${(shoes.find(s=>s.id===r.shoeId)||{model:'Unknown'}).model}</span>`:''}</div></div>
-      ${r.fromStrava?'<span class="strava-icon">Strava</span>':'<span></span>'}
-      <div class="run-stat"><div class="run-stat-val">${effectiveDist(r).toFixed(1)}</div><div class="run-stat-key">km total</div></div>
-      <div class="run-stat"><div class="run-stat-val">${paceDisplay}</div><div class="run-stat-key">${avgs?'avg rep pace':'min/km'}</div></div>
-      <div class="run-stat"><div class="run-stat-val">${hrDisplay}</div><div class="run-stat-key">${avgs&&avgs.avgHR?'avg rep HR':'bpm'}</div></div>
-      ${(()=>{const sh=r.shoeId?shoes.find(s=>s.id===r.shoeId):null;return sh?`<div class="run-stat"><div class="run-stat-val" style="font-size:0.75rem;color:var(--accent)">👟</div><div class="run-stat-key" style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sh.model}</div></div>`:'<span></span>';})()}
-      ${expandBtn}
-      ${editBtn}
-      ${delBtn}
+      <div class="run-info">
+        <div class="run-name">${r.type}${hasIntervals?` <span style="font-size:0.7rem;color:var(--accent);font-weight:400">${avgs.count} reps</span>`:''}${stravaTag}</div>
+        <div class="run-date">${formatDate(r.date)}${shoeLine?` · ${shoeLine}`:''}</div>
+      </div>
+      <div class="run-stats-group">
+        <div class="run-stat"><div class="run-stat-val">${effectiveDist(r).toFixed(1)}</div><div class="run-stat-key">km</div></div>
+        <div class="run-stat"><div class="run-stat-val">${paceDisplay}</div><div class="run-stat-key">min/km</div></div>
+        <div class="run-stat"><div class="run-stat-val">${hrDisplay}</div><div class="run-stat-key">bpm</div></div>
+      </div>
+      <div class="run-actions">
+        ${expandBtn}
+        ${editBtn}
+        ${delBtn}
+      </div>
     </div>
     ${detailPanel}
   </div>`;
