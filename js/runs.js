@@ -437,25 +437,25 @@ function saveRun(){
     if(oldId)run.id=oldId;
     runs[editingIdx]=run;
     save();updateAll();closeModal();
-    if(dbConfigured())DB.updateRun(run).catch(e=>console.warn('DB update failed:',e));
+    dbSave(`PACE: update run ${run.date} ${run.type}`);
     sheetsPushRun(run,'update_run');
   } else {
     run.id=`${run.date}-${run.type}-${Math.random().toString(36).slice(2,8)}`;
     runs.unshift(run);
     save();updateAll();closeModal();
-    if(dbConfigured())DB.addRun(run).catch(e=>console.warn('DB insert failed:',e));
+    dbSave(`PACE: add run ${run.date} ${run.type}`);
     sheetsPushRun(run,'add_run');
   }
 }
 
 function deleteRun(idx){
   if(!confirm('Delete this run?'))return;
-  const runId=runs[idx]?.id;
+  const run=runs[idx];
   runs.splice(idx,1);
   save();updateAll();
-  if(runId){
-    if(dbConfigured())DB.deleteRun(runId).catch(e=>console.warn('DB delete failed:',e));
-    sheetsDeleteRun(runId);
+  if(run){
+    dbSave(`PACE: delete run ${run.date} ${run.type}`);
+    if(run.id) sheetsDeleteRun(run.id);
   }
 }
 function filterRuns(type,el){activeFilter=type;document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');updateRunList();}

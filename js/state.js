@@ -1,10 +1,13 @@
 // ============================================================
 //  PACE — state.js
 //  Global state, constants, shared helper functions.
-//  On load: tries Supabase first, falls back to localStorage.
+//  On load: reads from GitHub data.json, falls back to localStorage.
 // ============================================================
 
-const TYPE_COLORS={'Long Run':'#a78bfa','Interval':'#8b5cf6','Recovery':'#c4b5fd','Tempo':'#7c3aed','Easy':'#a78bfa','Race':'#6d28d9'};
+const TYPE_COLORS = {
+  'Long Run':'#a78bfa','Interval':'#8b5cf6','Recovery':'#c4b5fd',
+  'Tempo':'#7c3aed','Easy':'#a78bfa','Race':'#6d28d9'
+};
 
 function stravaToType(act){
   const wt=act.workout_type,name=(act.name||'').toLowerCase();
@@ -16,7 +19,7 @@ function stravaToType(act){
   const km=(act.distance||0)/1000;if(km>=18)return'Long Run';if(km<=7)return'Recovery';return'Easy';
 }
 
-// ── App state ─────────────────────────────────────────────
+// ── App state ──────────────────────────────────────────────
 let runs         = JSON.parse(localStorage.getItem('pace_runs')  || '[]');
 let shoes        = JSON.parse(localStorage.getItem('pace_shoes') || '[]');
 let stravaConfig = JSON.parse(localStorage.getItem('pace_strava')|| 'null');
@@ -25,45 +28,41 @@ let segments     = [];
 let editingIdx   = null;
 let editingShoeIdx = null;
 
-// ── Helpers ───────────────────────────────────────────────
-function formatPace(distKm,durMin){
-  if(!distKm||!durMin||isNaN(distKm)||isNaN(durMin))return'—';
-  const s=(parseFloat(durMin)*60)/parseFloat(distKm);
-  return`${Math.floor(s/60)}:${Math.round(s%60).toString().padStart(2,'0')}`;
-}
-function paceToSec(p){
-  if(!p)return null;
-  const str=String(p).trim();
-  if(str.includes(':')){const[m,s]=str.split(':');return parseFloat(m)*60+parseFloat(s||0);}
-  const[m,s]=str.split('.');return parseFloat(m)*60+parseFloat((s||'0').padEnd(2,'0').substring(0,2));
-}
-function secToPace(s){
-  if(!s||isNaN(s))return'—';
-  return`${Math.floor(s/60)}:${Math.round(s%60).toString().padStart(2,'0')}`;
-}
-function formatDate(s){if(!s)return'';return new Date(s+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});}
+// ── Local cache helpers ────────────────────────────────────
+function save()      { localStorage.setItem('pace_runs',  JSON.stringify(runs));  }
+function saveShoes() { localStorage.setItem('pace_shoes', JSON.stringify(shoes)); }
+function saveStrava(cfg){ stravaConfig=cfg; localStorage.setItem('pace_strava', JSON.stringify(cfg)); }
 
-// ── Local cache (always kept in sync as offline fallback) ─
-function save(){localStorage.setItem('pace_runs',JSON.stringify(runs));}
-function saveShoes(){localStorage.setItem('pace_shoes',JSON.stringify(shoes));}
-function saveStrava(cfg){stravaConfig=cfg;localStorage.setItem('pace_strava',JSON.stringify(cfg));}
-function showAlert(id,msg,type){
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=msg;el.className=`alert ${type} show`;
-  if(type!=='info')setTimeout(()=>el.classList.remove('show'),6000);
+function showAlert(id, msg, type){
+  const el=document.getElementById(id); if(!el)return;
+  el.textContent=msg; el.className=`alert ${type} show`;
+  if(type!=='info') setTimeout(()=>el.classList.remove('show'), 6000);
 }
+
 function ensureIds(){
   let changed=false;
-  runs.forEach(r=>{if(!r.id){r.id=`${r.date}-${r.type}-${Math.random().toString(36).slice(2,8)}`;changed=true;}});
-  shoes.forEach(s=>{if(!s.id){s.id=`shoe-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;changed=true;}});
-  if(changed){save();saveShoes();}
+  runs.forEach(r=>{ if(!r.id){ r.id=`${r.date}-${r.type}-${Math.random().toString(36).slice(2,8)}`; changed=true; }});
+  shoes.forEach(s=>{ if(!s.id){ s.id=`shoe-${Date.now()}-${Math.random().toString(36).slice(2,6)}`; changed=true; }});
+  if(changed){ save(); saveShoes(); }
 }
 
-// ── Seed data (shown on first ever load, pre-DB) ──────────
+// ── Push full state to GitHub ──────────────────────────────
+// Called after every run/shoe save or delete
+async function dbSave(message){
+  if(!dbConfigured()) return;
+  try{
+    await DB.save(runs, shoes, message);
+  } catch(err){
+    console.warn('GitHub save failed:', err.message);
+    showDbStatus('error');
+  }
+}
+
+// ── Seed data (shown on very first load only) ──────────────
 function seedIfEmpty(){
-  if(runs.length>0)return;
-  const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0];};
-  runs=[
+  if(runs.length > 0) return;
+  const ago=n=>{ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; };
+  runs = [
     {id:'seed-easy-1',  date:ago(1), type:'Easy',    distance:'8.2', duration:'47', hr:'132',cadence:'168',notes:'Morning shakeout'},
     {id:'seed-int-4',   date:ago(4), type:'Interval', distance:'10.5',duration:'60', hr:'165',cadence:'182',notes:'8x400m session',segments:[
       {segType:'Warmup',distance:'1.0',pace:'7:00',hr:'135'},{segType:'Interval',distance:'0.4',pace:'4:33',hr:'175'},
@@ -80,24 +79,46 @@ function seedIfEmpty(){
   save();
 }
 
-// ── DB status banner ──────────────────────────────────────
+// ── DB status banner ───────────────────────────────────────
 function showDbStatus(state){
-  const el=document.getElementById('db-status');if(!el)return;
+  const el=document.getElementById('db-status'); if(!el) return;
   const map={
-    loading:      {text:'Connecting to database…',          cls:'info'},
-    connected:    {text:'✓ Database connected',             cls:'success'},
-    offline:      {text:'⚠ Offline — using local cache',   cls:'warning'},
-    unconfigured: {text:'ⓘ No database configured — data saved locally only', cls:'info'},
+    loading:      { text:'Syncing with GitHub…',              cls:'info'    },
+    connected:    { text:'✓ Synced with GitHub',              cls:'success' },
+    offline:      { text:'⚠ Offline — using local cache',    cls:'warning' },
+    error:        { text:'⚠ GitHub save failed — check token', cls:'warning'},
+    unconfigured: { text:'ⓘ No database configured — data is local only', cls:'info' },
   };
   const s=map[state]||map.unconfigured;
   el.textContent=s.text; el.className=`db-status-bar ${s.cls}`; el.style.display='block';
-  if(state==='connected')setTimeout(()=>{el.style.display='none';},3000);
+  if(state==='connected') setTimeout(()=>{ el.style.display='none'; }, 3000);
 }
 
-// ── Boot: load from Supabase if configured, else localStorage ─
+// ── Helpers ────────────────────────────────────────────────
+function formatPace(distKm,durMin){
+  if(!distKm||!durMin||isNaN(distKm)||isNaN(durMin))return'—';
+  const s=(parseFloat(durMin)*60)/parseFloat(distKm);
+  return`${Math.floor(s/60)}:${Math.round(s%60).toString().padStart(2,'0')}`;
+}
+function paceToSec(p){
+  if(!p)return null;
+  const str=String(p).trim();
+  if(str.includes(':')){const[m,s]=str.split(':');return parseFloat(m)*60+parseFloat(s||0);}
+  const[m,s]=str.split('.');return parseFloat(m)*60+parseFloat((s||'0').padEnd(2,'0').substring(0,2));
+}
+function secToPace(s){
+  if(!s||isNaN(s))return'—';
+  return`${Math.floor(s/60)}:${Math.round(s%60).toString().padStart(2,'0')}`;
+}
+function formatDate(s){
+  if(!s)return'';
+  return new Date(s+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+}
+
+// ── Boot: load from GitHub, fall back to localStorage ─────
 async function initData(){
   showDbStatus('loading');
-  seedIfEmpty();
+  seedIfEmpty(); // show something immediately from cache
 
   if(!dbConfigured()){
     showDbStatus('unconfigured');
@@ -106,19 +127,24 @@ async function initData(){
   }
 
   try{
-    const[dbRuns,dbShoes]=await Promise.all([DB.getRuns(),DB.getShoes()]);
-    if(dbRuns.length===0&&runs.length>0){
-      // First time connecting — push local data up
+    const { runs: ghRuns, shoes: ghShoes } = await DB.load();
+
+    if(ghRuns.length === 0 && runs.length > 0){
+      // GitHub is empty but we have local data — push it up
       ensureIds();
-      await DB.syncAll(runs,shoes);
-    } else {
-      // DB is source of truth
-      runs=dbRuns; shoes=dbShoes;
+      await DB.save(runs, shoes, 'PACE: initial data migration');
+      showDbStatus('connected');
+    } else if(ghRuns.length > 0){
+      // GitHub has data — use it as source of truth
+      runs  = ghRuns;
+      shoes = ghShoes;
       save(); saveShoes();
+      showDbStatus('connected');
+    } else {
+      showDbStatus('connected');
     }
-    showDbStatus('connected');
-  }catch(err){
-    console.warn('Supabase unavailable, using local cache:',err.message);
+  } catch(err){
+    console.warn('GitHub unavailable, using local cache:', err.message);
     showDbStatus('offline');
   }
 

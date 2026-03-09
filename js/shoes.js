@@ -137,9 +137,7 @@ function saveShoeFn(){
   updateGear();
   closeShoeModal();
   populateShoeSelect(document.getElementById('f-shoe')?.value||'');
-  if(dbConfigured()){
-    (isEdit?DB.updateShoe(shoe):DB.addShoe(shoe)).catch(e=>console.warn('DB shoe save failed:',e));
-  }
+  dbSave(`PACE: ${isEdit?'update':'add'} shoe ${shoe.model}`);
 }
 
 function deleteShoe(idx){
@@ -154,5 +152,5 @@ function deleteShoe(idx){
   save();
   shoes.splice(idx,1);
   saveShoes();updateAll();updateGear();
-  if(dbConfigured())DB.deleteShoe(shoe.id).catch(e=>console.warn('DB shoe delete failed:',e));
+  dbSave(`PACE: delete shoe ${shoe.model}`);
 }
