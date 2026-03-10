@@ -18,5 +18,5 @@ function toggleTheme(){
   document.getElementById('theme-toggle').textContent=saved==='dark'?'🌙':'☀️';
 })();
 
-// Boot the app — initData loads from Supabase (or localStorage fallback)
-initData();
+// Boot the app — called by auth.js after login, not here directly
+// initData() is now invoked from auth.js → showApp()
