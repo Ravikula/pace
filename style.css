@@ -532,3 +532,53 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
 .db-status-bar.info    {background:var(--isb-bg);border:1px solid var(--isb-border);color:var(--accent);}
 .db-status-bar.success {background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.35);color:#4ade80;}
 .db-status-bar.warning {background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.30);color:#fbbf24;}
+
+/* ── AUTH SCREEN ─────────────────────────────────────────── */
+#auth-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px;
+  background:var(--bg);
+}
+.auth-card{
+  width:100%;max-width:400px;
+  background:var(--card-bg);border:1px solid var(--card-border);
+  border-radius:20px;padding:40px 32px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.3);
+}
+.auth-logo{
+  font-family:'Bebas Neue',cursive;font-size:2.8rem;
+  letter-spacing:2px;color:var(--accent);margin-bottom:4px;
+}
+.auth-logo span{color:var(--p300);}
+.auth-sub{font-size:0.85rem;color:var(--muted);margin-bottom:28px;}
+.auth-error{
+  background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
+  color:#f87171;border-radius:10px;padding:10px 14px;
+  font-size:0.83rem;margin-bottom:16px;
+}
+.auth-submit{width:100%;margin-top:8px;padding:12px;font-size:1rem;}
+.auth-toggle{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;margin-top:20px;font-size:0.82rem;color:var(--muted);
+}
+.auth-toggle-btn{
+  background:none;border:none;color:var(--accent);
+  cursor:pointer;font-size:0.82rem;font-weight:600;
+  padding:0;text-decoration:underline;
+}
+.auth-divider{
+  display:flex;align-items:center;gap:12px;
+  margin:16px 0;color:var(--muted);font-size:0.8rem;
+}
+.auth-divider::before,.auth-divider::after{
+  content:'';flex:1;height:1px;background:var(--card-border);
+}
+.google-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+  background:var(--card-bg);border:1px solid var(--card-border);
+  color:var(--text);border-radius:10px;padding:11px;
+  font-family:'DM Sans',sans-serif;font-size:0.92rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.google-btn:hover{background:var(--row-hover);border-color:var(--accent);}
+.google-btn:disabled{opacity:0.6;cursor:not-allowed;}

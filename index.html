@@ -9,6 +9,42 @@
 </head>
 <body>
 
+<!-- ── LOGIN SCREEN ─────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">PACE<span>.</span></div>
+    <div class="auth-sub">Your personal run tracker</div>
+
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn-primary auth-submit" id="auth-submit-btn" onclick="handleAuthSubmit()">Sign In</button>
+
+    <div class="auth-divider"><span>or</span></div>
+
+    <button class="google-btn" id="google-btn" onclick="handleGoogleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M47.5 24.6c0-1.6-.1-3.1-.4-4.6H24v8.7h13.2c-.6 3-2.3 5.5-4.9 7.2v6h7.9c4.6-4.3 7.3-10.6 7.3-17.3z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.9-6c-2.1 1.4-4.9 2.3-8 2.3-6.1 0-11.3-4.1-13.1-9.7H2.7v6.2C6.7 42.8 14.8 48 24 48z"/><path fill="#FBBC05" d="M10.9 28.8c-.5-1.4-.7-2.9-.7-4.4s.3-3 .7-4.4v-6.2H2.7C1 17.2 0 20.5 0 24s1 6.8 2.7 9.2l8.2-4.4z"/><path fill="#EA4335" d="M24 9.5c3.4 0 6.5 1.2 8.9 3.5l6.6-6.6C35.9 2.5 30.4 0 24 0 14.8 0 6.7 5.2 2.7 12.8l8.2 4.4C12.7 13.6 17.9 9.5 24 9.5z"/></svg>
+      Continue with Google
+    </button>
+
+    <div class="auth-toggle">
+      <span id="auth-toggle-text">Don't have an account?</span>
+      <button class="auth-toggle-btn" id="auth-toggle-btn" onclick="toggleAuthMode()">Sign Up</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP (hidden until logged in) ────────────────── -->
+<div id="app" style="display:none">
+
 <header>
   <div class="logo">PACE<span>.</span></div>
   <nav id="top-nav">
@@ -18,7 +54,9 @@
     <button onclick="switchView('connections',this)">⚡ Connections</button>
   </nav>
   <div class="header-right">
+    <span id="user-email-label" style="font-size:0.75rem;color:var(--muted);display:none"></span>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
+    <button class="btn-secondary" style="padding:6px 14px;font-size:0.8rem" onclick="authSignOut()" title="Sign out">Sign Out</button>
     <button class="add-btn" onclick="openModal()">+ Log Run</button>
   </div>
 </header>
@@ -372,12 +410,12 @@
     <div class="form-grid" style="grid-template-columns:1fr">
       <div class="form-group">
         <label>Shoe Model / Name</label>
-        <input type="text" id="s-model" placeholder="e.g. Asics Novablast 5">
+        <input type="text" id="s-model" placeholder="e.g. Nike Vaporfly 3">
       </div>
       <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
-          <label>Size (US)</label>
-          <input type="text" id="s-size" placeholder="e.g. 9">
+          <label>Size (EU)</label>
+          <input type="text" id="s-size" placeholder="e.g. 43">
         </div>
         <div>
           <label>Starting Mileage (km)</label>
@@ -422,7 +460,7 @@
         <label>Total Duration <span style="font-size:0.72rem;color:var(--muted);font-weight:400">(auto-calculated)</span></label>
         <div id="duration-preview" style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:600;color:var(--accent);padding:10px 14px;background:var(--input-bg);border:1px solid var(--card-border);border-radius:10px;min-height:42px;display:flex;align-items:center;">—</div>
       </div>
-      <div class="form-group"><label>Avg Heart Rate(bpm)</label><input type="number" id="f-hr" placeholder="e.g. 148" min="0"></div>
+      <div class="form-group"><label>Avg Heart Rate</label><input type="number" id="f-hr" placeholder="e.g. 148" min="0"></div>
       <div class="form-group"><label>Avg Cadence (spm)</label><input type="number" id="f-cadence" placeholder="e.g. 172" min="0"></div>
       <div class="form-group full">
         <label>Shoe Used</label>
@@ -459,8 +497,11 @@
 <!-- DB status banner — shown briefly on load -->
 <div id="db-status" class="db-status-bar" style="display:none"></div>
 
+</div><!-- end #app -->
+
 <!-- JS modules — load order matters: db first, then state, then features -->
 <script src="js/db.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/state.js"></script>
 <script src="js/shoes.js"></script>
 <script src="js/runs.js"></script>
