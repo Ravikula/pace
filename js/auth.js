@@ -3,11 +3,12 @@
 //  Login screen UI — Email/Password + Google Sign-In
 // ============================================================
 
-let _authMode = 'signin'; // 'signin' | 'signup'
+let _authMode = 'signin';
 
 function toggleAuthMode() {
   _authMode = _authMode === 'signin' ? 'signup' : 'signin';
   const isSignUp = _authMode === 'signup';
+  document.getElementById('auth-name-group').style.display = isSignUp ? 'block' : 'none';
   document.getElementById('auth-submit-btn').textContent  = isSignUp ? 'Create Account' : 'Sign In';
   document.getElementById('auth-toggle-text').textContent = isSignUp ? 'Already have an account?' : "Don't have an account?";
   document.getElementById('auth-toggle-btn').textContent  = isSignUp ? 'Sign In' : 'Sign Up';
@@ -21,12 +22,14 @@ function showAuthError(msg) {
 }
 
 async function handleAuthSubmit() {
+  const name     = document.getElementById('auth-name').value.trim();
   const email    = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const btn      = document.getElementById('auth-submit-btn');
 
   if (!email || !password) { showAuthError('Please enter your email and password.'); return; }
   if (password.length < 6) { showAuthError('Password must be at least 6 characters.'); return; }
+  if (_authMode === 'signup' && !name) { showAuthError('Please enter your name.'); return; }
 
   btn.textContent = 'Please wait…';
   btn.disabled = true;
@@ -35,6 +38,8 @@ async function handleAuthSubmit() {
   try {
     if (_authMode === 'signup') {
       await authSignUp(email, password);
+      // Save name to Firestore profile
+      if (name) await saveUserProfile(name);
     } else {
       await authSignIn(email, password);
     }
@@ -47,6 +52,32 @@ async function handleAuthSubmit() {
   }
 }
 
+// Save user profile (name) to Firestore
+async function saveUserProfile(name) {
+  try {
+    await fsPatch(`users/${currentUser().uid}/profile/info`, {
+      name: toFs(name),
+      email: toFs(currentUser().email),
+    });
+  } catch(e) {
+    console.warn('Could not save profile:', e.message);
+  }
+}
+
+// Load user name from Firestore and show greeting
+async function loadAndShowGreeting() {
+  const el = document.getElementById('dashboard-greeting');
+  if (!el) return;
+  try {
+    const doc = await fsGet(`users/${currentUser().uid}/profile/info`);
+    const name = doc?.fields?.name ? fromFs(doc.fields.name) : null;
+    const displayName = name || currentUser().email.split('@')[0];
+    el.innerHTML = `<div class="greeting">Hi <span>${displayName}</span>, welcome to PACE. Let's run! 🏃</div>`;
+  } catch(e) {
+    el.innerHTML = '';
+  }
+}
+
 // ── Google Sign-In ───────────────────────────────────────────
 async function handleGoogleSignIn() {
   const btn = document.getElementById('google-btn');
@@ -55,7 +86,6 @@ async function handleGoogleSignIn() {
   document.getElementById('auth-error').style.display = 'none';
 
   try {
-    // Open Google OAuth popup
     const redirectUri = encodeURIComponent(location.origin + location.pathname);
     const clientId    = await getGoogleClientId();
     const nonce       = Math.random().toString(36).slice(2);
@@ -66,10 +96,7 @@ async function handleGoogleSignIn() {
       + `&scope=email%20profile`
       + `&nonce=${nonce}`;
 
-    // Use popup window
     const popup = window.open(oauthUrl, 'googleSignIn', 'width=500,height=600,left=200,top=100');
-
-    // Listen for the redirect back with id_token in hash
     const checkPopup = setInterval(async () => {
       try {
         if (!popup || popup.closed) {
@@ -91,7 +118,6 @@ async function handleGoogleSignIn() {
         }
       } catch(e) { /* cross-origin, keep waiting */ }
     }, 300);
-
   } catch(err) {
     showAuthError('Google sign-in failed. Please try again.');
     btn.disabled = false;
@@ -100,14 +126,11 @@ async function handleGoogleSignIn() {
 }
 
 async function getGoogleClientId() {
-  // Fetch client ID from Firebase project config
   const res = await fetch(
     `https://www.googleapis.com/identitytoolkit/v3/relyingparty/getProjectConfig?key=${FIREBASE_CONFIG.apiKey}`
   );
   const data = await res.json();
-  const provider = (data.authorizedDomains && data.idpConfig)
-    ? data.idpConfig.find(p => p.provider === 'google.com')
-    : null;
+  const provider = data.idpConfig ? data.idpConfig.find(p => p.provider === 'google.com') : null;
   if (provider) return provider.clientId;
   throw new Error('Google provider not configured');
 }
@@ -124,7 +147,7 @@ function friendlyAuthError(msg) {
   if (msg.includes('TOO_MANY_ATTEMPTS'))       return 'Too many attempts. Please try again later.';
   if (msg.includes('WEAK_PASSWORD'))           return 'Password must be at least 6 characters.';
   if (msg.includes('INVALID_EMAIL'))           return 'Please enter a valid email address.';
-  return msg; // Show raw error for debugging
+  return msg;
 }
 
 function showApp() {
@@ -136,6 +159,7 @@ function showApp() {
     if (label) { label.textContent = u.email; label.style.display = 'inline'; }
   }
   initData();
+  loadAndShowGreeting();
 }
 
 function showAuthScreen() {
@@ -143,7 +167,6 @@ function showAuthScreen() {
   document.getElementById('app').style.display = 'none';
 }
 
-// Enter key submits
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('auth-screen').style.display !== 'none') {
     handleAuthSubmit();

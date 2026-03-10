@@ -582,3 +582,12 @@ code{background:var(--isb-bg);color:var(--accent);padding:1px 6px;border-radius:
 }
 .google-btn:hover{background:var(--row-hover);border-color:var(--accent);}
 .google-btn:disabled{opacity:0.6;cursor:not-allowed;}
+
+/* ── DASHBOARD GREETING ──────────────────────────────────── */
+.greeting{
+  font-size:1.1rem;font-weight:500;color:var(--muted);
+  padding:4px 0 8px 0;
+}
+.greeting span{
+  color:var(--accent);font-weight:700;
+}

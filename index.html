@@ -17,6 +17,10 @@
 
     <div id="auth-error" class="auth-error" style="display:none"></div>
 
+    <div class="form-group" id="auth-name-group" style="display:none">
+      <label>Name</label>
+      <input type="text" id="auth-name" placeholder="e.g. John" autocomplete="given-name">
+    </div>
     <div class="form-group">
       <label>Email</label>
       <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
@@ -89,7 +93,8 @@
 <!-- DASHBOARD -->
 <div class="view active" id="view-dashboard">
 
-  <!-- ROW 1: Total Distance + Total Runs -->
+  <div id="dashboard-greeting" style="margin-bottom:20px;"></div>
+
   <!-- ROW 1: Total Distance · Total Runs · Interval Avg Pace -->
   <div class="stats-row">
     <!-- Total Distance -->
