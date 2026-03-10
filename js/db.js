@@ -2,6 +2,7 @@
 //  PACE — db.js
 //  Firebase Auth + Firestore via REST API.
 //  Each user's data is stored at: users/{uid}/data/runs
+//  Sessions use refresh tokens — passwords never stored.
 // ============================================================
 
 const FIREBASE_CONFIG = {
@@ -15,14 +16,15 @@ function dbConfigured() {
 }
 
 // ── Auth state ───────────────────────────────────────────────
-let _currentUser = null;   // { uid, email, idToken }
+let _currentUser = null;   // { uid, email, idToken, refreshToken }
 let _authReadyResolve;
-const authReady  = new Promise(res => { _authReadyResolve = res; });
+const authReady = new Promise(res => { _authReadyResolve = res; });
 
 function currentUser() { return _currentUser; }
 
 // ── Firebase Auth REST ───────────────────────────────────────
-const AUTH_BASE = 'https://identitytoolkit.googleapis.com/v1/accounts';
+const AUTH_BASE    = 'https://identitytoolkit.googleapis.com/v1/accounts';
+const TOKEN_BASE   = 'https://securetoken.googleapis.com/v1/token';
 
 async function authRequest(endpoint, body) {
   const res = await fetch(`${AUTH_BASE}:${endpoint}?key=${FIREBASE_CONFIG.apiKey}`, {
@@ -49,39 +51,70 @@ async function authSignIn(email, password) {
 
 async function authGoogleSignIn(googleIdToken) {
   const data = await authRequest('signInWithIdp', {
-    postBody:          `id_token=${googleIdToken}&providerId=google.com`,
-    requestUri:        location.origin + location.pathname,
-    returnSecureToken: true,
+    postBody:            `id_token=${googleIdToken}&providerId=google.com`,
+    requestUri:          location.origin + location.pathname,
+    returnSecureToken:   true,
     returnIdpCredential: true,
   });
   _setUser(data);
   return data;
 }
 
+// Refresh the ID token using the stored refresh token
+async function authRefreshToken(refreshToken) {
+  const res = await fetch(`${TOKEN_BASE}?key=${FIREBASE_CONFIG.apiKey}`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    `grant_type=refresh_token&refresh_token=${refreshToken}`,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'Token refresh failed');
+  return {
+    localId:      data.user_id,
+    email:        data.email || _currentUser?.email || '',
+    idToken:      data.id_token,
+    refreshToken: data.refresh_token,
+  };
+}
+
 function authSignOut() {
   _currentUser = null;
-  localStorage.removeItem('pace_auth');
+  localStorage.removeItem('pace_session');
   location.reload();
 }
 
+// Save refresh token only (not password)
+function saveSession(refreshToken) {
+  localStorage.setItem('pace_session', JSON.stringify({ refreshToken }));
+}
+
+// Restore session using refresh token
 async function authRestore() {
-  const saved = localStorage.getItem('pace_auth');
+  const saved = localStorage.getItem('pace_session');
   if (saved) {
     try {
-      const { email, password } = JSON.parse(saved);
-      const data = await authRequest('signInWithPassword', { email, password, returnSecureToken: true });
+      const { refreshToken } = JSON.parse(saved);
+      const data = await authRefreshToken(refreshToken);
       _setUser(data);
       return true;
     } catch(e) {
-      localStorage.removeItem('pace_auth');
+      console.warn('Session restore failed:', e.message);
+      localStorage.removeItem('pace_session');
     }
   }
+  // Also clear old insecure password-based sessions
+  localStorage.removeItem('pace_auth');
   _authReadyResolve(null);
   return false;
 }
 
 function _setUser(data) {
-  _currentUser = { uid: data.localId, email: data.email, idToken: data.idToken };
+  _currentUser = {
+    uid:          data.localId,
+    email:        data.email,
+    idToken:      data.idToken,
+    refreshToken: data.refreshToken,
+  };
   _authReadyResolve(_currentUser);
 }
 
@@ -103,6 +136,14 @@ function userDocPath() {
 async function fsGet(path) {
   const res = await fetch(`${fsBase()}/${path}`, { headers: fsHeaders() });
   if (res.status === 404) return null;
+  if (res.status === 401) {
+    // Token expired — refresh and retry once
+    await _refreshAndRetry();
+    const res2 = await fetch(`${fsBase()}/${path}`, { headers: fsHeaders() });
+    if (res2.status === 404) return null;
+    if (!res2.ok) throw new Error(`Firestore read error ${res2.status}`);
+    return res2.json();
+  }
   if (!res.ok) throw new Error(`Firestore read error ${res.status}`);
   return res.json();
 }
@@ -113,8 +154,26 @@ async function fsPatch(path, fields) {
     headers: fsHeaders(),
     body:    JSON.stringify({ fields }),
   });
+  if (res.status === 401) {
+    await _refreshAndRetry();
+    const res2 = await fetch(`${fsBase()}/${path}`, {
+      method:  'PATCH',
+      headers: fsHeaders(),
+      body:    JSON.stringify({ fields }),
+    });
+    if (!res2.ok) throw new Error(`Firestore write error ${res2.status}`);
+    return res2.json();
+  }
   if (!res.ok) throw new Error(`Firestore write error ${res.status}`);
   return res.json();
+}
+
+async function _refreshAndRetry() {
+  if (!_currentUser?.refreshToken) throw new Error('No refresh token');
+  const data = await authRefreshToken(_currentUser.refreshToken);
+  _currentUser.idToken      = data.idToken;
+  _currentUser.refreshToken = data.refreshToken;
+  saveSession(_currentUser.refreshToken);
 }
 
 // ── Firestore value converters ───────────────────────────────

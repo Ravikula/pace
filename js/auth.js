@@ -38,12 +38,15 @@ async function handleAuthSubmit() {
   try {
     if (_authMode === 'signup') {
       await authSignUp(email, password);
-      // Save name to Firestore profile
       if (name) await saveUserProfile(name);
     } else {
       await authSignIn(email, password);
     }
-    localStorage.setItem('pace_auth', JSON.stringify({ email, password }));
+    // Save refresh token (not password) if "keep me logged in" is checked
+    const keepLoggedIn = document.getElementById('auth-keep')?.checked;
+    if (keepLoggedIn) {
+      saveSession(currentUser().refreshToken);
+    }
     showApp();
   } catch(err) {
     showAuthError(friendlyAuthError(err.message));
